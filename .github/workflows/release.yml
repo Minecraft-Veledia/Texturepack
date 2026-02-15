@@ -1,0 +1,48 @@
+name: Build and Release Resourcepack
+
+on:
+  push:
+    branches:
+      - main  # Erstellt ein Release bei jedem Push auf den Main-Branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Create Resourcepack Zip
+        run: |
+          # Zippt den Inhalt (ohne den .git Ordner und die Action selbst)
+          zip -r ServerPack.zip . -x "*.git*" ".github/*" "README.md"
+
+      - name: Calculate SHA-1 Hash
+        id: sha1
+        run: |
+          # Berechnet den Hash und speichert ihn in einer Variable
+          HASH=$(sha1sum ServerPack.zip | awk '{ print $1 }')
+          echo "pack_hash=$HASH" >> $GITHUB_OUTPUT
+          echo "SHA-1 Hash ist: $HASH"
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Release v${{ github.run_number }}
+          body: |
+            ### 🛠 Automatisches Update
+            Ein neues Resourcepack wurde gebaut.
+            
+            **SHA-1 Hash für ForceResourcePack:**
+            `${{ steps.sha1.outputs.pack_hash }}`
+            
+            **Direkter Download-Link:**
+            `https://github.com/${{ github.repository }}/releases/download/v${{ github.run_number }}/ServerPack.zip`
+          files: ServerPack.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
