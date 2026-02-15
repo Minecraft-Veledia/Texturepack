@@ -1,0 +1,11 @@
+{
+  "providers": [
+    {
+      "type": "bitmap",
+      "file": "minecraft:font/veledia_banner.png",
+      "ascent": 22,
+      "height": 30,
+      "chars": ["\uE001"]
+    }
+  ]
+}
